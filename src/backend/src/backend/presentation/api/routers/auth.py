@@ -39,3 +39,7 @@ def login(
 def get_me(user_id: CurrentUserIdDep, service: UserServiceDep) -> UserResponse:
     user = service.fetch_user(user_id).get_or_throw()
     return UserResponse(id=user.id, email=user.email, user_name=user.user_name)
+
+@router.get("/logout", status_code=status.HTTP_204_NO_CONTENT)
+def logout(_: CurrentUserIdDep) -> None:
+    return None 
