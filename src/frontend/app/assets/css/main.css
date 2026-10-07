@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Lexend:wght@100..900&display=swap');
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@theme {
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --color-primary-50: #fff3ed;
+  --color-primary-100: #ffe3d4;
+  --color-primary-200: #ffc4a8;
+  --color-primary-300: #ff9a70;
+  --color-primary-400: #ff6e3a;
+  --color-primary-500: #fa520f; /* Base */
+  --color-primary-600: #dd3f06;
+  --color-primary-700: #b72f08;
+  --color-primary-800: #93270e;
+  --color-primary-900: #78230f;
+  --color-primary-950: #410f05;
+
+  --color-secondary-50: #fffee6;
+  --color-secondary-100: #fffab8;
+  --color-secondary-200: #fff085;
+  --color-secondary-300: #ffe74d;
+  --color-secondary-400: #ffdf1f;
+  --color-secondary-500: #ffd800; /* Couleur de base secondaire */
+  --color-secondary-600: #d6b000;
+  --color-secondary-700: #a88500;
+  --color-secondary-800: #886a07;
+  --color-secondary-900: #735809;
+  --color-secondary-950: #433203;
+
+  --color-neutral-50: #fffaeb;  /* Fond de page mode clair */
+  --color-neutral-100: #f6efdc; /* Cartes / Inputs en mode clair */
+  --color-neutral-200: #e8dfc9;
+  --color-neutral-300: #d2c8b0;
+  --color-neutral-400: #a59d8f;
+  --color-neutral-500: #8a8173;
+  --color-neutral-600: #6b6458;
+  --color-neutral-700: #3a352f; /* Texte principal en mode clair */
+  --color-neutral-800: #26231f; /* Fond de carte en mode sombre */
+  --color-neutral-900: #1a1a1a; /* Fond de page mode sombre */
+  --color-neutral-950: #0f0e0c;
+
+  --ui-primary: var(--color-primary-500);
+  --ui-secondary: var(--color-secondary-500);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+* {
+
+}
+
+html, body { 
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
