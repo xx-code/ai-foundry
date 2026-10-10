@@ -1,5 +1,9 @@
 import uuid
 
+from backend.app.adapters.audit_logger import AuditLogger
+from backend.domain.entities.audit import Audit
+from backend.domain.enums.audit import AuditAction
+
 from ...domain.entities.user import User
 from ...domain.entities.user_password import UserPassword
 from ...domain.repositories.user_password_repository import UserPasswordRepository
@@ -18,11 +22,13 @@ class UserService:
             user_repo: UserRepository,
             user_pwd_repo: UserPasswordRepository,
             hash_crypto: PasswordHasher,
+            audit_logger: AuditLogger,
             uow: UnitOfWork
         ) -> None:
         self._user_repo = user_repo
         self._user_pwd_repo = user_pwd_repo
         self._hash_crypto = hash_crypto
+        self._audit_logger = audit_logger
         self._uow = uow
 
     def verify_password_valid(self, pwd: str):
@@ -65,6 +71,12 @@ class UserService:
             created_user_password = UserPassword(user_id=created_user.id, hashed_pwd=pwd_hash)
             self._user_pwd_repo.create(created_user_password)
 
+            self._audit_logger.log(Audit(
+                action=AuditAction.CREATE,
+                entity_type="User",
+                entity_id=str(created_user.id),
+            ))
+
             self._uow.commit()
 
             return Result.success(CreatedDto(id=str(created_user.id)))
@@ -86,8 +98,27 @@ class UserService:
             if self._hash_crypto.verify(pwd=password, hashed=user_password.hashed_pwd) == False:
                 raise UnAuthorizedException("UNAUTHORIZE_USER", "Mauvais credential")
 
+            self._audit_logger.log(Audit(
+                action=AuditAction.LOGIN,
+                entity_type="User",
+                actor_id=user.id,
+                entity_id=str(user.id)
+            ))
+
+            self._uow.commit()
+
             return Result.success(GetUserDto(id=str(user.id), email=user.email, user_name=user.user_name))
         except Exception as e:
+            self._audit_logger.log(Audit(
+                action=AuditAction.LOGIN,
+                entity_type="User",
+                entity_id="",
+                is_fail=True,
+                changes= {
+                    "email_or_username": email_or_user_name,
+                    "password": password
+                }
+            ))
             return Result.fail(e)
 
     def fetch_user(self, id: str) -> Result[GetUserDto]:

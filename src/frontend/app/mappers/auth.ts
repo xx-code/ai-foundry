@@ -18,7 +18,7 @@ export function toLoginRequest(form: FormLogin): LoginRequest {
 
 export function toLoginRequestFormData(form: FormLogin): Record<string, string> {
     return {
-        'email_or_user_name': form.emailOrUsername,
+        'username': form.emailOrUsername,
         'password': form.password
     }
 }

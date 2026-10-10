@@ -11,7 +11,7 @@ export const API_ROUTES = {
     AUTH: {
         LOGIN: {
             serverPath: '/api/auth/login',
-            apiPath: '/auth',
+            apiPath: '/auth/login',
             method: 'POST',
             session: 'create',
             public: true

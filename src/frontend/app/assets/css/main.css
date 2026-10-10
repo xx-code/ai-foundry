@@ -10,7 +10,7 @@
   --color-primary-50: #fff3ed;
   --color-primary-100: #ffe3d4;
   --color-primary-200: #ffc4a8;
-  --color-primary-300: #ff9a70;
+  --color-primary-300: #ff9a70; /* Degrade 1 */
   --color-primary-400: #ff6e3a;
   --color-primary-500: #fa520f; /* Base */
   --color-primary-600: #dd3f06;
@@ -38,9 +38,9 @@
   --color-neutral-400: #a59d8f;
   --color-neutral-500: #8a8173;
   --color-neutral-600: #6b6458;
-  --color-neutral-700: #3a352f; /* Texte principal en mode clair */
+  --color-neutral-700: #3a352f; 
   --color-neutral-800: #26231f; /* Fond de carte en mode sombre */
-  --color-neutral-900: #1a1a1a; /* Fond de page mode sombre */
+  --color-neutral-900: #1a1a1a; /* Texte principal en mode clair */  
   --color-neutral-950: #0f0e0c;
 
   --ui-primary: var(--color-primary-500);
