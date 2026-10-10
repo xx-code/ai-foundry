@@ -1,19 +1,22 @@
-<script lang="ts" setup>
-import { toWelcome } from './mappers';
-import { API_ROUTES } from './shared/routes';
-import type { WelcomeResponse } from './types/api';
-
-const { data } = useAsyncData('welcome', async () => {
-  const res = await ApiLinkBuilder.route<WelcomeResponse>(API_ROUTES.ROOT.WELCOME)
-    .mapper(toWelcome)
-    .execute()
-
-  return res
-})
-</script>
-
 <template>
-  <div>
-    <p>{{ data?.message }}</p>
-  </div>
+  <body class="bg-neutral-50 text-neutral-900" > 
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
+  </body> 
 </template>
+
+<style scoped>
+.page-enter-active,
+.page-leave-active {
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.page-enter-from {
+    opacity: 0;
+    transform: translateY(8px);
+}
+.page-leave-to {
+    opacity: 0;
+    transform: translateY(-8px);
+}
+</style>
