@@ -29,6 +29,11 @@ class AiProviderKey(Entity):
     def name(self) -> str:
         return self._name
 
+    def set_name(self, name: str):
+        if self._name != name:
+            self._name = name
+            self._mark_changed()
+
     @property
     def provider(self) -> AiProvider:
         return self._provider

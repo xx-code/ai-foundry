@@ -1,6 +1,9 @@
 from functools import lru_cache
 from typing import Annotated, Iterator
 
+from backend.app.services.chat import ChatService
+from backend.domain.repositories.model_repository import ModelRepository
+from backend.infra.persistence.sqlalchemy.repositories.model import SqlAlchemyModelRepository
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import create_engine
@@ -59,6 +62,11 @@ def get_crypto() -> Crypto:
     s = get_settings()
     return CryptoAdpater(s.crypt_secret)
 
+@lru_cache
+def get_ai_provider_model_repository() -> ProviderAiModelRepository: 
+    return FactoryProviderAiModelRepository()
+
+
 DatabaseDep = Annotated[Database, Depends(get_database)]
 HasherDep = Annotated[PasswordHasher, Depends(get_password_hasher)]
 TokenAdapterDep = Annotated[TokenAdapter, Depends(get_token_adapter)]
@@ -88,6 +96,9 @@ def get_audit_logger_repository(session: SessionDep) -> Repository[Audit]:
 def get_ai_provider_repository(sesion: SessionDep) -> Repository[AiProviderKey]: 
     return SqlAlchemyAiProviderkeyRepository(sesion)
 
+def get_model_repository(session: SessionDep) -> ModelRepository:
+    return SqlAlchemyModelRepository(session)
+
 def get_uow(session: SessionDep) -> UnitOfWork:
     return SqlAlchemyUnitOfWork(session)
 
@@ -99,9 +110,6 @@ def get_current_user_id(
 
 def get_audit_logger(audit_repo: Annotated[Repository[Audit], Depends(get_audit_logger_repository)]) -> AuditLogger:
     return AuditLoggerAdapter(audit_repo) 
-
-def get_ai_provider_model_repository() -> ProviderAiModelRepository: 
-    return FactoryProviderAiModelRepository()
 
 AuditLoggerDep = Annotated[AuditLogger, Depends(get_audit_logger)]
 CurrentUserIdDep = Annotated[str, Depends(get_current_user_id)]
@@ -132,18 +140,28 @@ def get_model_service(
         provider_model_repository: Annotated[ProviderAiModelRepository, Depends(get_ai_provider_model_repository)],
         ai_provider_key_repo: Annotated[Repository[AiProviderKey], Depends(get_ai_provider_repository)],
         user_repo: Annotated[UserRepository, Depends(get_user_repository)],
+        model_repo: Annotated[ModelRepository, Depends(get_model_repository)],
         crypto: CryptoDep,
         uow: Annotated[UnitOfWork, Depends(get_uow)],
     ) -> ModelService:
     return ModelService(
         model_adapter=provider_model_repository,
+        model_repo=model_repo,
         ai_provider_key_repo=ai_provider_key_repo,
         user_repo=user_repo,
         crypto=crypto,
         uow=uow
     )
 
+def get_chat_service(
+        model_service: Annotated[ModelService, Depends(get_model_service)]
+    ):
+    return ChatService(
+        model_service=model_service
+    )
+
 
 UserServiceDep = Annotated[UserService, Depends(get_user_service)]
 AiProviderKeyServiceDep = Annotated[AiProviderKeyService, Depends(get_ai_provider_key_service)]
 ModelServiceDep = Annotated[ModelService, Depends(get_model_service)]
+ChatServiceDep = Annotated[ChatService, Depends(get_chat_service)]
