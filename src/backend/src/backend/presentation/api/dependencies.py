@@ -1,8 +1,12 @@
 from functools import lru_cache
 from typing import Annotated, Iterator
 
+from cachetools import TTLCache
+
+from backend.app.adapters.chat_temporal_session import ChatTemporalSession
 from backend.app.services.chat import ChatService
 from backend.domain.repositories.model_repository import ModelRepository
+from backend.infra.adapters.chat_temporal_session import ChatTemporalSessionTTLCache
 from backend.infra.persistence.sqlalchemy.repositories.model import SqlAlchemyModelRepository
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
@@ -66,11 +70,16 @@ def get_crypto() -> Crypto:
 def get_ai_provider_model_repository() -> ProviderAiModelRepository: 
     return FactoryProviderAiModelRepository()
 
+@lru_cache
+def get_chat_session() -> TTLCache:
+    return TTLCache(maxsize=100, ttl=86400)
+
 
 DatabaseDep = Annotated[Database, Depends(get_database)]
 HasherDep = Annotated[PasswordHasher, Depends(get_password_hasher)]
 TokenAdapterDep = Annotated[TokenAdapter, Depends(get_token_adapter)]
 CryptoDep = Annotated[Crypto, Depends(get_crypto)]
+ChatSessionDep = Annotated[TTLCache, Depends(get_chat_session)]
 
 
 # --- Cheap objects, built per request (the session lives in Database's ContextVar)
@@ -110,6 +119,9 @@ def get_current_user_id(
 
 def get_audit_logger(audit_repo: Annotated[Repository[Audit], Depends(get_audit_logger_repository)]) -> AuditLogger:
     return AuditLoggerAdapter(audit_repo) 
+
+def get_chat_temporal_session_cache(session: ChatSessionDep) -> ChatTemporalSession: 
+    return ChatTemporalSessionTTLCache(session)
 
 AuditLoggerDep = Annotated[AuditLogger, Depends(get_audit_logger)]
 CurrentUserIdDep = Annotated[str, Depends(get_current_user_id)]
@@ -156,11 +168,13 @@ def get_model_service(
 def get_chat_service(
         model_service: Annotated[ModelService, Depends(get_model_service)],
         ai_provider_key_service: Annotated[AiProviderKeyService, Depends(get_ai_provider_key_service)],
+        cache_session: Annotated[ChatTemporalSession, Depends(get_chat_temporal_session_cache)],
         uow: Annotated[UnitOfWork, Depends(get_uow)],
     ):
     return ChatService(
         model_service=model_service,
         ai_provider_key_service=ai_provider_key_service,
+        chat_temporal_session=cache_session,
         uow=uow
     )
 

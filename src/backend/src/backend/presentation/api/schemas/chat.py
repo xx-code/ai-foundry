@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Any, Dict
 from backend.app.services.dto.chat import ChatModelDto
 from pydantic import BaseModel
 
@@ -8,12 +9,14 @@ class AskChatModelRequest(BaseModel):
     session_id: str
 
 class ChatModelResponse(BaseModel):
-    response: str
+    response: Any
+    usage_metadata: Any
     session_id: str
 
     @classmethod
     def from_service(cls, dto: ChatModelDto) -> ChatModelResponse:   
         return ChatModelResponse(
             response=dto.response,
+            usage_metadata=dto.usage_info,
             session_id=dto.session_id
         )
