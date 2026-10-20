@@ -63,10 +63,15 @@ class GoogleModelAdapter:
                 or getattr(model, "id", None)
                 or str(model)
             )
+            model_id = str(model_id).strip()
+            if model_id.startswith("models/"):
+                model_id = model_id.removeprefix("models/")
+            if not model_id.startswith("google_genai:"):
+                model_id = f"google_genai:{model_id}"
             model_type = getattr(model, "type", None) or getattr(model, "display_name", None) or "MODEL"
             items.append(
                 AiProviderModelDto(
-                    model_id=str(model_id),
+                    model_id=model_id,
                     type=str(model_type),
                     input_price="",
                     output_price="",

@@ -154,10 +154,14 @@ def get_model_service(
     )
 
 def get_chat_service(
-        model_service: Annotated[ModelService, Depends(get_model_service)]
+        model_service: Annotated[ModelService, Depends(get_model_service)],
+        ai_provider_key_service: Annotated[AiProviderKeyService, Depends(get_ai_provider_key_service)],
+        uow: Annotated[UnitOfWork, Depends(get_uow)],
     ):
     return ChatService(
-        model_service=model_service
+        model_service=model_service,
+        ai_provider_key_service=ai_provider_key_service,
+        uow=uow
     )
 
 

@@ -1,9 +1,10 @@
 from fastapi import APIRouter
 
+from backend.app.services.dto.model import DeployModelDto
 from backend.domain.enums.ai_provider import AiProvider
 from backend.presentation.api.dependencies import CurrentUserIdDep, ModelServiceDep
-from backend.presentation.api.schemas.base import ListResponse
-from backend.presentation.api.schemas.model import AiProviderModelResponse, ModelResponse
+from backend.presentation.api.schemas.base import CreatedResponse, ListResponse
+from backend.presentation.api.schemas.model import AiProviderModelResponse, DeployModelRequest, ModelResponse
 
 
 router = APIRouter(prefix="/models", tags=["models"])
@@ -32,3 +33,8 @@ def get_model(model_id: str, _: CurrentUserIdDep, service: ModelServiceDep) -> M
 
     return ModelResponse.from_service(model)
 
+@router.post("/")
+def deploy_model(request: DeployModelRequest, user_id: CurrentUserIdDep,  service: ModelServiceDep) -> CreatedResponse:
+    created = service.deploy_model(input=request.to_domain(user_id)).get_or_throw()
+
+    return CreatedResponse.from_service(created)

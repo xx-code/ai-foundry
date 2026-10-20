@@ -1,10 +1,11 @@
 from __future__ import annotations
 from typing import Optional
-from backend.app.services.dto.model import ModelDto
+from backend.app.services.dto.model import DeployModelDto, ModelDto
 from backend.domain.enums.model_reasoning import ModelReasoning
 from pydantic import BaseModel
 
 from backend.app.adapters.dto.model_adapter import AiProviderModelDto
+from backend.domain.value_objects.model_params import ModelParams
 
 
 class AiProviderModelResponse(BaseModel):
@@ -22,15 +23,37 @@ class AiProviderModelResponse(BaseModel):
 class ModelParamsResponse(BaseModel):
     temparature: float
     max_tokens: int
-    timeout: float
+    timeout: int
     reasoning: ModelReasoning
+
+    def to_domain(self) -> ModelParams:
+        return ModelParams(
+            temperature=self.temparature,
+            max_tokens=self.max_tokens,
+            timeout=self.timeout,
+            reasoning=self.reasoning
+        )
 
 class DeployModelRequest(BaseModel):
     name: str
     provider_key_id: str
     provider_model_id: str
-    params: ModelParamsResponse
     default_instruction: Optional[str] = ""
+    params: Optional[ModelParamsResponse] = None
+
+    def to_domain(self, user_id: str) -> DeployModelDto:
+        input_params = None
+        if self.params is not None:
+            input_params = self.params.to_domain()
+
+        return DeployModelDto(
+            user_id=user_id,
+            provider_key_id=self.provider_key_id,
+            provider_model_id=self.provider_model_id,
+            name=self.name,
+            default_instruction=self.default_instruction,
+            params= input_params 
+        )
 
 class UpdateModelRequest(BaseModel):
     name: Optional[str] = None

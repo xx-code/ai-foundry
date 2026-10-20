@@ -10,7 +10,7 @@ class DeployModelDto:
     user_id: str
     provider_key_id: str
     provider_model_id: str
-    params: ModelParams 
+    params: ModelParams | None = None 
     default_instruction: str | None = None
 
 @dataclass
@@ -26,8 +26,8 @@ class ModelDto:
     name: str
     provider_id: str
     provider_model_id: str
-    params: ModelParams
     default_instruction: str
+    params: ModelParams
 
     @classmethod
     def from_model(cls, model: Model) -> ModelDto:

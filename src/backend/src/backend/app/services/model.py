@@ -12,6 +12,7 @@ from backend.domain.repositories.model_repository import ModelRepository
 from backend.domain.repositories.repository import Repository
 from backend.domain.repositories.unit_of_work import UnitOfWork
 from backend.domain.repositories.user_repository import UserRepository
+from backend.domain.value_objects.model_params import ModelParams
 
 
 class ModelService:
@@ -70,14 +71,20 @@ class ModelService:
             if input.default_instruction is not None:
                 instruction = input.default_instruction
 
+            params = ModelParams()
+            if input.params is not None:
+                params = input.params
+
             model = Model(
                 user_id=user_id,
                 default_instruction=instruction,
                 provider_model_id=input.provider_model_id,                
                 provider_key_id=uuid.UUID(input.provider_key_id),
                 name=input.name,
-                params=input.params
+                params=params
             )
+            self._model_repo.create(model)
+            self._uow.commit()
 
             return Result.success(CreatedDto(str(model.id)))
         except Exception as e:
