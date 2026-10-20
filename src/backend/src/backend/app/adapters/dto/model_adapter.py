@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 
-from backend.domain.enums.ai_provider import OnlineAiProvider
+from backend.domain.enums.ai_provider import AiProvider
 
 @dataclass
 class ListAiProviderModelDto:
-    provider: OnlineAiProvider
-    ApiKey: str 
+    provider: AiProvider
+    api_key: str 
 
 @dataclass
 class AiProviderModelDto:

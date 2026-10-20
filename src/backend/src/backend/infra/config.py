@@ -8,6 +8,7 @@ class Settings:
     jwt_secret: str = field(default_factory=lambda: os.environ["JWT_SECRET"])
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 60
+    crypt_secret: str = field(default_factory=lambda: os.environ["CRYPTO_SECRET"])
 
 
 def get_settings() -> Settings:

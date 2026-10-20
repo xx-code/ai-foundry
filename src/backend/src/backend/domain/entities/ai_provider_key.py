@@ -1,7 +1,7 @@
 from datetime import datetime
 from backend.domain.entities.entity import Entity
 from uuid import UUID
-from backend.domain.enums.ai_provider import OnlineAiProvider
+from backend.domain.enums.ai_provider import AiProvider
 
 
 class AiProviderKey(Entity):
@@ -9,9 +9,8 @@ class AiProviderKey(Entity):
     def __init__(
             self, 
             user_id: UUID,
-            provider: OnlineAiProvider,
+            provider: AiProvider,
             api_key: str, 
-            memo_key: str,
             name: str,
             id: UUID | None = None, 
             created_at: datetime | None = None, 
@@ -21,11 +20,6 @@ class AiProviderKey(Entity):
         self._api_key = api_key
         self._name = name
         self._user_id = user_id
-        self._memo_key = memo_key
-
-    @property
-    def memo_key(self) -> str:
-        return self._memo_key
 
     @property
     def user_id(self) -> UUID:
@@ -36,7 +30,7 @@ class AiProviderKey(Entity):
         return self._name
 
     @property
-    def provider(self) -> OnlineAiProvider:
+    def provider(self) -> AiProvider:
         return self._provider
 
     @property

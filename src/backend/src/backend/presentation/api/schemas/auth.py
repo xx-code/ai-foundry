@@ -12,9 +12,6 @@ class LoginRequest(BaseModel):
     password: str
 
 
-class CreatedResponse(BaseModel):
-    id: str
-
 
 class UserResponse(BaseModel):
     id: str
