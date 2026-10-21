@@ -13,7 +13,7 @@ from backend.infra.persistence.sqlalchemy.repositories.base import SqlAlchemyRep
 class SqlAlchemyModelRepository(SqlAlchemyRepository[Model, ModelModel], ModelRepository):
     model = ModelModel
 
-    def get_by_user_id(self, user_id: UUID) -> Page[Model]:
+    def get_by_user_id(self, user_id: UUID, query: Query | None = None) -> Page[Model]:
         query = Query(
             conditions=(
                 Condition(field="user_id", operator=Comparator.EQUAL, value=user_id),

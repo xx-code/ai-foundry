@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.12"
 resolution-markers = [
     "python_full_version >= '3.14'",
@@ -72,6 +72,8 @@ dependencies = [
     { name = "fastapi", extra = ["standard"] },
     { name = "google-genai" },
     { name = "langchain", extra = ["google-genai", "openai"] },
+    { name = "langchain-capsule" },
+    { name = "langchain-diffbot" },
     { name = "openai" },
     { name = "psycopg", extra = ["binary"] },
     { name = "pyjwt" },
@@ -86,6 +88,8 @@ requires-dist = [
     { name = "fastapi", extras = ["standard"], specifier = ">=0.142.2" },
     { name = "google-genai", specifier = ">=2.31.0" },
     { name = "langchain", extras = ["google-genai", "openai"], specifier = ">=1.4.6" },
+    { name = "langchain-capsule", specifier = ">=0.2.0" },
+    { name = "langchain-diffbot", specifier = ">=0.2.0" },
     { name = "openai", specifier = ">=3.35.1" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.3.6" },
     { name = "pyjwt", specifier = ">=2.15.1" },
@@ -99,6 +103,32 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/3a/5d/15ea0494ebcb9062c7ca79bf026cbba380a50538ae73753fb40bdffa79e2/cachetools-7.2.4.tar.gz", hash = "sha256:e0203b04b75fe13e62098eeb5b2018c4eb1a14c04e2b5b450e70db3ee7e92ec5", size = 44251, upload-time = "2026-10-19T19:09:44.931Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/5a/4c/694f7d44f2399b3901232d6ded1c88442a02fc8141936396d9289d951848/cachetools-7.2.4-py3-none-any.whl", hash = "sha256:4cfbebf3eec4040d2073b19c460511ad47eef7b852dbf9a0d385099b4dafa31e", size = 18571, upload-time = "2026-10-19T19:09:43.296Z" },
+]
+
+[[package]]
+name = "capsule-run"
+version = "0.8.10"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "componentize-py" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/1d/f0/738f36f6abf7be5de17c26df700025ad722210ee3000a1c8a3d152cf1845/capsule_run-0.8.10.tar.gz", hash = "sha256:b3e0486cf6d0e11258d76a1936984cb7cc16d15adbb229403f9d9a15cf696ef9", size = 154338, upload-time = "2026-04-24T20:15:32.553Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a8/c4/6093a5d63bcf1d129a87f7cc2e59ed9db5b91023812d7e609a825897ad5b/capsule_run-0.8.10-py3-none-macosx_11_0_arm64.whl", hash = "sha256:5fea628d181c6b9149ff31f12da4cd0d0c0e4ce817b1a294a790029b45691658", size = 9683299, upload-time = "2026-04-24T20:15:30.451Z" },
+    { url = "https://files.pythonhosted.org/packages/f0/6f/3777cd1e96e3580937ce6a886aaba0bfcde5f768b4105d77806d005289d6/capsule_run-0.8.10-py3-none-manylinux_2_28_x86_64.whl", hash = "sha256:98048f4e714a9db5a44fa476990004d803003326f55dd9ca7345231e773e259a", size = 10698146, upload-time = "2026-04-24T20:15:44.871Z" },
+    { url = "https://files.pythonhosted.org/packages/1c/b3/021aa18bf0ac14cb76f1668f8ccb84f846bdab06efeb2a3f0f62d41c838d/capsule_run-0.8.10-py3-none-win_amd64.whl", hash = "sha256:e3269ce5d85ff1292345857d02b6ffa934bd81e0e60c87bd830924d073bd503e", size = 10341135, upload-time = "2026-04-24T20:20:45.997Z" },
+]
+
+[[package]]
+name = "capsule-run-adapter"
+version = "0.3.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "capsule-run" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/b1/5e/774b1c84c63174570d0fa9ceb47ae63119350e5bc136978702ea5691907a/capsule_run_adapter-0.3.5.tar.gz", hash = "sha256:cfb2bc3d192c5ac945c2f24e3d6e59217813ecda801baa22fb1d3eab5c5fbf38", size = 11653677, upload-time = "2026-04-02T21:31:13.946Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/50/de/8c420678895d76dc954dec2d5f084a973bb46dcde19c0f245128694142ab/capsule_run_adapter-0.3.5-py2.py3-none-any.whl", hash = "sha256:f29f9a22e91dafd7927357403337a147ad78e4d89d0dac87cbc020494fc9c612", size = 11746075, upload-time = "2026-04-02T21:31:11.056Z" },
 ]
 
 [[package]]
@@ -345,6 +375,19 @@ wheels = [
 ]
 
 [[package]]
+name = "componentize-py"
+version = "0.25.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/77/3d/c769bac866429f36a6d52451fb2980d5e8784efb1d265fb85eaaceb3c285/componentize_py-0.25.1.tar.gz", hash = "sha256:e4087e916b06171303f803c8ffdd5f177e2422e87d9bed6ffe55cc41b2248aa8", size = 192179, upload-time = "2026-09-12T00:46:39.345Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a1/fc/ea8ac30a3de452626e32c051a38f548e9f7863cd10c35705396e257ac029/componentize_py-0.25.1-cp39-abi3-macosx_10_12_x86_64.whl", hash = "sha256:65fbc4a94df1de8acf7da50a1f5ed1711230188844e53e6332d99029be4e0afa", size = 16115332, upload-time = "2026-09-12T00:46:05.55Z" },
+    { url = "https://files.pythonhosted.org/packages/4b/9c/f444240899a9b43c60b808d0ece5dff8f3dc6831aa119a1d8eb28d952bad/componentize_py-0.25.1-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:a556991534cc496207a9d2ca733c4b0f17ed38ef56a8d6b5f1847fdf1225dd1b", size = 15379697, upload-time = "2026-09-12T00:46:15.278Z" },
+    { url = "https://files.pythonhosted.org/packages/56/66/24a9671f1d9c608e53a8d5ae4873d1fc480f0603488a2f46132e70cc6839/componentize_py-0.25.1-cp39-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:7b6a87c520358166843af0daa86d2312d7af4cbcbbf1e598951085cf7f2991ca", size = 17143402, upload-time = "2026-09-12T00:46:22.865Z" },
+    { url = "https://files.pythonhosted.org/packages/ed/c6/ad1431751ff1969a132323f6e2797ec38ccdf9d0a53aabb45d79221092a4/componentize_py-0.25.1-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:8623cd8cab8453cb0cd8bf03f3c7103420d06f2f3d360186a280a70a1ca5e89f", size = 17122694, upload-time = "2026-09-12T00:46:30.3Z" },
+    { url = "https://files.pythonhosted.org/packages/4b/60/5b08715534795d84feec8ec8ae50599681ea1199ee7b300ad072fdcd24af/componentize_py-0.25.1-cp39-abi3-win_amd64.whl", hash = "sha256:c7fd552fb0849858b0c1e8981543ed5dff4b0cc1597a8ea0bc26a495786dc0c6", size = 15285843, upload-time = "2026-09-12T00:46:37.399Z" },
+]
+
+[[package]]
 name = "cryptography"
 version = "50.0.2"
 source = { registry = "https://pypi.org/simple" }
@@ -414,6 +457,20 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/cd/eb/77b0cc7fc0235b0495b32410edebe14cf6757b826135a7f92bb0f5d843b9/detect_installer-0.2.1.tar.gz", hash = "sha256:85f889d4d19c1caf5bef89ef389eb920cd8c6c2a868e1eeceec24527b93021e7", size = 3634, upload-time = "2026-09-02T14:14:38.961Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/61/fe/a245e1d579e7abf47208f7c1ce5684caa2cd956ede5ff646d66d0299d9e8/detect_installer-0.2.1-py3-none-any.whl", hash = "sha256:87e2ce7d05cb108b178f8e45bb80d3d88c0cb4b397983345c18ad6562e02e620", size = 5371, upload-time = "2026-09-02T14:14:38.106Z" },
+]
+
+[[package]]
+name = "diffbot"
+version = "3.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "click" },
+    { name = "httpx" },
+    { name = "rich" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ff/d2/4d2433eec2b49e97ddb167549272a68ca7fec312a8b3678c7843edb09ddd/diffbot-3.0.0.tar.gz", hash = "sha256:9ca2e77328d27242ab13046cea948514ff97de7498fcc074f586c305701d87e1", size = 33200, upload-time = "2026-09-28T22:38:06.326Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a3/c2/a51b7a1b726288f8c9e2dc4d08fcda31fd2f3d7c9ce4c59d1d696452e8d5/diffbot-3.0.0-py3-none-any.whl", hash = "sha256:3465e1d59f112051cf62e8a8ccf4523196d9941429eb1bf9c9b6f60630db7cc2", size = 33662, upload-time = "2026-09-28T22:38:07.531Z" },
 ]
 
 [[package]]
@@ -1007,6 +1064,19 @@ openai = [
 ]
 
 [[package]]
+name = "langchain-capsule"
+version = "0.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "capsule-run-adapter" },
+    { name = "langchain-core" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9c/03/804fd57dd372698f0c0d1493387eba3f4880ad2bf02c203ef03fd684e9e4/langchain_capsule-0.2.0.tar.gz", hash = "sha256:d691e9fd4f24aaaf34f3fd6918ea34c6a5c482af68fe5eda8d045e7ff664e137", size = 7455, upload-time = "2026-04-02T12:09:12.009Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e7/6a/7880fa1258ba0eff6d8c73b2364c08f7631db3a7a4553c8f95fee4ff501f/langchain_capsule-0.2.0-py2.py3-none-any.whl", hash = "sha256:56aed7d207f6ac3d0a87d62f83aac9b3ecbb7d8b8a4903a5f8b4654d05fa0170", size = 5687, upload-time = "2026-04-02T12:09:11.226Z" },
+]
+
+[[package]]
 name = "langchain-core"
 version = "1.6.12"
 source = { registry = "https://pypi.org/simple" }
@@ -1025,6 +1095,20 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/12/c2/9779d64322d4e270f6d5392bc86b30f735581a87b5eefd6ad15a0828a169/langchain_core-1.6.12.tar.gz", hash = "sha256:dc6b2a965c351b4cc94df1c80220bcf3c5472e14437d2186c8290ea22f4d0219", size = 1015639, upload-time = "2026-10-16T19:28:31.055Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c6/7b/49de1d4d6b9ff62e7c40a6fceb6aeecd8c190ac5f49dd7a99948c6650c16/langchain_core-1.6.12-py3-none-any.whl", hash = "sha256:39b07aed976baac14c47b7a21e3c7d4073362bccf06cf8799c585dcc9548547d", size = 573838, upload-time = "2026-10-16T19:28:29.466Z" },
+]
+
+[[package]]
+name = "langchain-diffbot"
+version = "0.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "diffbot" },
+    { name = "httpx" },
+    { name = "langchain-core" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/db/49/97e955726b9208b40c675ea768169518e6d23a99293117099b88ccbc7b99/langchain_diffbot-0.2.0.tar.gz", hash = "sha256:245e6f6c927d2b499ccb2abe36697b785324bc97c4ffcf7cce0e7f4913d707fd", size = 16413, upload-time = "2026-09-28T22:47:23.609Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/72/38/7331015254afb85d4e744694d2ec771489f4223901f7e6bdd2d4ca8cf308/langchain_diffbot-0.2.0-py3-none-any.whl", hash = "sha256:92e944b3a459a69f1053a182ee30be136b0341259f96550bda1b25f544e403b2", size = 19658, upload-time = "2026-09-28T22:47:24.633Z" },
 ]
 
 [[package]]

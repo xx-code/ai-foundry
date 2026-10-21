@@ -1,6 +1,11 @@
 from functools import lru_cache
 from typing import Annotated, Iterator
 
+from backend.app.adapters.ai_code_interpretor_tool import AiCodeInterpretorTool
+from backend.app.adapters.ai_web_tool import AiWebTool
+from backend.app.services.ai_tool import AiToolService
+from backend.infra.adapters.ai_code_interpretor_tool import CapsuleAiCodeInterpretor
+from backend.infra.adapters.ai_web_tool import DiffBotAiWebTool
 from cachetools import TTLCache
 
 from backend.app.adapters.chat_temporal_session import ChatTemporalSession
@@ -8,6 +13,9 @@ from backend.app.services.chat import ChatService
 from backend.domain.repositories.model_repository import ModelRepository
 from backend.infra.adapters.chat_temporal_session import ChatTemporalSessionTTLCache
 from backend.infra.persistence.sqlalchemy.repositories.model import SqlAlchemyModelRepository
+from backend.infra.persistence.sqlalchemy.repositories.model_tool import (
+    SqlAlchemyModelToolRepository,
+)
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import create_engine
@@ -21,8 +29,11 @@ from backend.app.adapters.token_adapter import TokenAdapter
 from backend.app.services.ai_provider_key import AiProviderKeyService
 from backend.app.services.model import ModelService
 from backend.app.services.user import UserService
+from backend.app.services.user_mcp_tool import  UserMcpToolServerService
 from backend.domain.entities.ai_provider_key import AiProviderKey
 from backend.domain.entities.audit import Audit
+from backend.domain.entities.model_tool import ModelTool
+from backend.domain.entities.user_mcp_server import UserMcpServer
 from backend.domain.repositories.repository import Repository
 from backend.domain.repositories.unit_of_work import UnitOfWork
 from backend.domain.repositories.user_password_repository import UserPasswordRepository
@@ -39,6 +50,9 @@ from backend.infra.persistence.sqlalchemy.repositories.audit import SqlAlchemyAu
 from backend.infra.persistence.sqlalchemy.repositories.user import SqlAlchemyUserRepository
 from backend.infra.persistence.sqlalchemy.repositories.user_password import (
     SqlAlchemyUserPasswordRepository,
+)
+from backend.infra.persistence.sqlalchemy.repositories.user_mcp_server import (
+    SqlAlchemyUserMcpServerRepository,
 )
 from backend.infra.persistence.sqlalchemy.unit_of_work import SqlAlchemyUnitOfWork
 
@@ -74,12 +88,22 @@ def get_ai_provider_model_repository() -> ProviderAiModelRepository:
 def get_chat_session() -> TTLCache:
     return TTLCache(maxsize=100, ttl=86400)
 
+@lru_cache
+def get_ai_web_tool() -> AiWebTool:
+    s = get_settings()
+    return DiffBotAiWebTool(s.diff_bot_api_token)
+
+@lru_cache
+def get_ai_code_interpretor() -> AiCodeInterpretorTool:
+    return CapsuleAiCodeInterpretor()
 
 DatabaseDep = Annotated[Database, Depends(get_database)]
 HasherDep = Annotated[PasswordHasher, Depends(get_password_hasher)]
 TokenAdapterDep = Annotated[TokenAdapter, Depends(get_token_adapter)]
 CryptoDep = Annotated[Crypto, Depends(get_crypto)]
 ChatSessionDep = Annotated[TTLCache, Depends(get_chat_session)]
+AiWebToolDep = Annotated[AiWebTool, Depends(get_ai_web_tool)]
+AiCodeInterpretorToolDep = Annotated[AiCodeInterpretorTool, Depends(get_ai_code_interpretor)]
 
 
 # --- Cheap objects, built per request (the session lives in Database's ContextVar)
@@ -107,6 +131,12 @@ def get_ai_provider_repository(sesion: SessionDep) -> Repository[AiProviderKey]:
 
 def get_model_repository(session: SessionDep) -> ModelRepository:
     return SqlAlchemyModelRepository(session)
+
+def get_model_tool_repository(session: SessionDep) -> Repository[ModelTool]:
+    return SqlAlchemyModelToolRepository(session)
+
+def get_user_mcp_server_repository(session: SessionDep) -> Repository[UserMcpServer]:
+    return SqlAlchemyUserMcpServerRepository(session)
 
 def get_uow(session: SessionDep) -> UnitOfWork:
     return SqlAlchemyUnitOfWork(session)
@@ -148,11 +178,25 @@ def get_ai_provider_key_service(
         uow=uow
     )
 
+def get_user_mcp_tool_service(
+    user_repo: Annotated[UserRepository, Depends(get_user_repository)],
+    user_mcp_server_repo: Annotated[
+        Repository[UserMcpServer], Depends(get_user_mcp_server_repository)
+    ],
+    crypto: CryptoDep,
+    uow: Annotated[UnitOfWork, Depends(get_uow)],
+) -> UserMcpToolServerService:
+    return UserMcpToolServerService(user_repo, user_mcp_server_repo, crypto, uow)
+
 def get_model_service(
         provider_model_repository: Annotated[ProviderAiModelRepository, Depends(get_ai_provider_model_repository)],
         ai_provider_key_repo: Annotated[Repository[AiProviderKey], Depends(get_ai_provider_repository)],
         user_repo: Annotated[UserRepository, Depends(get_user_repository)],
         model_repo: Annotated[ModelRepository, Depends(get_model_repository)],
+        model_tool_repo: Annotated[Repository[ModelTool], Depends(get_model_tool_repository)],
+        user_mcp_tool_service: Annotated[
+            UserMcpToolServerService, Depends(get_user_mcp_tool_service)
+        ],
         crypto: CryptoDep,
         uow: Annotated[UnitOfWork, Depends(get_uow)],
     ) -> ModelService:
@@ -160,19 +204,37 @@ def get_model_service(
         model_adapter=provider_model_repository,
         model_repo=model_repo,
         ai_provider_key_repo=ai_provider_key_repo,
+        model_tool_repo=model_tool_repo,
+        user_mcp_tool_service=user_mcp_tool_service,
         user_repo=user_repo,
         crypto=crypto,
         uow=uow
     )
 
+def get_ai_tool_service(
+        ai_web_tool: AiWebToolDep,
+        ai_code_interpretor: AiCodeInterpretorToolDep,
+        user_mcp_server_repo: Annotated[
+            Repository[UserMcpServer], Depends(get_user_mcp_server_repository)
+        ],
+    ) -> AiToolService:
+    return AiToolService(
+        ai_web_tools=ai_web_tool,
+        ai_code_interpretor_tools=ai_code_interpretor,
+        user_mcp_server_repo=user_mcp_server_repo
+    )
+
+
 def get_chat_service(
         model_service: Annotated[ModelService, Depends(get_model_service)],
         ai_provider_key_service: Annotated[AiProviderKeyService, Depends(get_ai_provider_key_service)],
+        ai_tool_service: Annotated[AiToolService, Depends(get_ai_tool_service)],
         cache_session: Annotated[ChatTemporalSession, Depends(get_chat_temporal_session_cache)],
         uow: Annotated[UnitOfWork, Depends(get_uow)],
     ):
     return ChatService(
         model_service=model_service,
+        ai_tool_service=ai_tool_service,
         ai_provider_key_service=ai_provider_key_service,
         chat_temporal_session=cache_session,
         uow=uow
@@ -180,6 +242,7 @@ def get_chat_service(
 
 
 UserServiceDep = Annotated[UserService, Depends(get_user_service)]
+UserMcpServerServiceDep = Annotated[UserMcpToolServerService, Depends(get_user_mcp_tool_service)]
 AiProviderKeyServiceDep = Annotated[AiProviderKeyService, Depends(get_ai_provider_key_service)]
 ModelServiceDep = Annotated[ModelService, Depends(get_model_service)]
 ChatServiceDep = Annotated[ChatService, Depends(get_chat_service)]

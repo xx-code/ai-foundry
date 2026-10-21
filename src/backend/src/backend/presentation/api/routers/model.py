@@ -1,10 +1,10 @@
 from fastapi import APIRouter
 
-from backend.app.services.dto.model import DeployModelDto
+from backend.app.services.dto.model import AddModelToolDto, DeployModelDto
 from backend.domain.enums.ai_provider import AiProvider
 from backend.presentation.api.dependencies import CurrentUserIdDep, ModelServiceDep
 from backend.presentation.api.schemas.base import CreatedResponse, ListResponse
-from backend.presentation.api.schemas.model import AiProviderModelResponse, DeployModelRequest, ModelResponse
+from backend.presentation.api.schemas.model import AddModelToolRequest, AiProviderModelResponse, DeployModelRequest, ModelResponse
 
 
 router = APIRouter(prefix="/models", tags=["models"])
@@ -38,3 +38,16 @@ def deploy_model(request: DeployModelRequest, user_id: CurrentUserIdDep,  servic
     created = service.deploy_model(input=request.to_domain(user_id)).get_or_throw()
 
     return CreatedResponse.from_service(created)
+
+@router.put("/{id}/tool")
+def add_tool(_: CurrentUserIdDep, id: str, request: AddModelToolRequest, service: ModelServiceDep):
+    service.add_tool(AddModelToolDto(
+        model_id=id,
+        tool_id=request.tool_id,
+        type=request.tool_type
+    )).get_or_throw()
+
+
+@router.delete("/{id}/model/{model_tool_id}")
+def remove_tool(__: CurrentUserIdDep, id: str, model_tool_id: str, service: ModelServiceDep):
+    service.remove_tool(model_tool_id).get_or_throw()

@@ -8,7 +8,7 @@ from sqlalchemy import create_engine
 # Importer les modèles est obligatoire : sinon Base.metadata est vide
 # et l'autogenerate ne détecte aucune table
 from backend.infra.persistence.sqlalchemy.models import (
-    Base, UserModel, UserPasswordModel, AuditModel # type: ignore
+    Base, UserModel, UserPasswordModel, AuditModel, ModelToolModel, UserMcpServerModel # type: ignore
 )  # noqa: F401 # type: ignore
 
 load_dotenv()

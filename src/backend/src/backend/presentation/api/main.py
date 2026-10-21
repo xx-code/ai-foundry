@@ -5,7 +5,7 @@ from fastapi import FastAPI
 
 from .dependencies import get_database
 from .error_handlers import register_error_handlers
-from .routers import auth, ai_provider, user, model, chat
+from .routers import auth, ai_provider, user, model, chat, user_mcp_server
 
 
 @asynccontextmanager
@@ -22,6 +22,7 @@ def create_app() -> FastAPI:
     app.include_router(user.router)
     app.include_router(model.router)
     app.include_router(chat.router)
+    app.include_router(user_mcp_server.router)
 
     return app
 

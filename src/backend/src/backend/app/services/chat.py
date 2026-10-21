@@ -1,6 +1,8 @@
 from backend.app.adapters.chat_temporal_session import ChatTemporalSession
 from backend.app.adapters.crypto import Crypto
 from backend.app.services.ai_provider_key import AiProviderKeyService
+from backend.app.services.ai_tool import AiToolService
+from backend.app.services.dto.ai_tool import ToolSelectionDto
 from backend.app.services.dto.base import Result
 from backend.app.services.dto.chat import AskModelDto, ChatModelDto
 from backend.app.services.model import ModelService
@@ -22,11 +24,13 @@ class ChatService:
             model_service: ModelService,
             ai_provider_key_service: AiProviderKeyService,
             chat_temporal_session: ChatTemporalSession,
+            ai_tool_service: AiToolService,
             uow: UnitOfWork
         ) -> None:
         self._ai_provider_key_service = ai_provider_key_service
         self._model_service = model_service 
         self._chat_temporal_session = chat_temporal_session
+        self._ai_tool_service = ai_tool_service
         self._uow = uow
 
     def _init_chat_model(self, model_id: str) -> tuple[BaseChatModel, str]:
@@ -37,15 +41,30 @@ class ChatService:
         if model.params.reasoning != ModelReasoning.NONE:
             reasoning = model.params.reasoning 
 
-        return (
-            init_chat_model(
+        list_tools = None
+
+        if len(model.tools) > 0:
+            list_tools = self._ai_tool_service.list_tools([
+                ToolSelectionDto(
+                    tool_type=model_tool.tool_type,
+                    tool_id=model_tool.tool_id
+                ) for model_tool in model.tools
+            ]).get_or_throw()
+
+        chat = init_chat_model(
             model=model.provider_model_id,
             api_key=ai_provider_key.api_key,
             temperature=model.params.temperature,
             timeout=model.params.timeout,
             max_tokens=model.params.max_tokens,
             reasoning_effort=reasoning
-            ),
+        )
+
+        if list_tools is not None:
+            chat.bind_tools(list_tools)
+
+        return (
+            chat,
             model.default_instruction
         )
 

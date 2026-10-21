@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Optional
 from backend.app.services.dto.model import DeployModelDto, ModelDto
+from backend.domain.enums.ai_tool import AiToolType
 from backend.domain.enums.model_reasoning import ModelReasoning
 from pydantic import BaseModel
 
@@ -59,6 +60,15 @@ class UpdateModelRequest(BaseModel):
     name: Optional[str] = None
     params: Optional[ModelParamsResponse] = None 
 
+class AddModelToolRequest(BaseModel):
+    tool_id: str
+    tool_type: AiToolType
+
+class ModelToolResponse(BaseModel):
+    id: str
+    tool_id: str
+    tool_type: AiToolType
+
 class ModelResponse(BaseModel):
     id: str
     provider_key_id: str
@@ -66,6 +76,7 @@ class ModelResponse(BaseModel):
     name: str
     default_instruction: str
     params: ModelParamsResponse
+    tools: list[ModelToolResponse] 
     
 
     @classmethod
@@ -81,5 +92,13 @@ class ModelResponse(BaseModel):
                 max_tokens=dto.params.max_tokens,
                 timeout=dto.params.timeout,
                 reasoning=dto.params.reasoning,
-            )
+            ),
+            tools=[
+                ModelToolResponse(
+                    id=str(tool.id),
+                    tool_id=tool.tool_id,
+                    tool_type=tool.tool_type
+                )
+                for tool in dto.tools
+            ]
         )
