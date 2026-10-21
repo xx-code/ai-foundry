@@ -14,3 +14,4 @@ class ChatModelDto:
     response: str | list[str | dict[Any, Any]]
     session_id: str
     usage_info: UsageMetadata | None
+    tool_usage: dict[str, Any] | list[dict[str, Any]] | None = None

@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from starlette import status
 
 from backend.app.services.dto.model import AddModelToolDto, DeployModelDto
 from backend.domain.enums.ai_provider import AiProvider
@@ -39,7 +40,7 @@ def deploy_model(request: DeployModelRequest, user_id: CurrentUserIdDep,  servic
 
     return CreatedResponse.from_service(created)
 
-@router.put("/{id}/tool")
+@router.put("/{id}/tool", status_code=status.HTTP_201_CREATED,)
 def add_tool(_: CurrentUserIdDep, id: str, request: AddModelToolRequest, service: ModelServiceDep):
     service.add_tool(AddModelToolDto(
         model_id=id,
@@ -48,6 +49,6 @@ def add_tool(_: CurrentUserIdDep, id: str, request: AddModelToolRequest, service
     )).get_or_throw()
 
 
-@router.delete("/{id}/model/{model_tool_id}")
+@router.delete("/{id}/model/{model_tool_id}", status_code=status.HTTP_204_NO_CONTENT,)
 def remove_tool(__: CurrentUserIdDep, id: str, model_tool_id: str, service: ModelServiceDep):
     service.remove_tool(model_tool_id).get_or_throw()
