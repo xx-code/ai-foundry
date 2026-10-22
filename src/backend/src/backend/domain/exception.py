@@ -22,3 +22,8 @@ class UnAuthorizedException(Exception):
         self.keyError = keyError 
         self.message = message
 
+class ForbiddenException(Exception):
+    def __init__(self, keyError: str, message: str="forbidden operation") -> None:
+        self.code = 403
+        self.keyError=keyError 
+        self. message=message

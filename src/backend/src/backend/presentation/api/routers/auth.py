@@ -6,11 +6,11 @@ from fastapi.security import OAuth2PasswordRequestForm
 from backend.app.services.dto.user import UserRegisterDto  # adapt to your path
 from backend.presentation.api.dependencies import UserServiceDep, TokenAdapterDep, CurrentUserIdDep
 from backend.presentation.api.schemas.auth import (
-    CreatedResponse,
     LoginResponse,
     RegisterRequest,
     UserResponse,
 )
+from backend.presentation.api.schemas.base import CreatedResponse
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

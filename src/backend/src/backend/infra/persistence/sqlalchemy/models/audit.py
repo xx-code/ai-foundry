@@ -16,8 +16,8 @@ class AuditModel(Base):
     __tablename__ = "audits"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True)
-    entity_type: Mapped[str] = mapped_column(String(100), unique=True)
-    entity_id: Mapped[str] = mapped_column(String(100), unique=True)
+    entity_type: Mapped[str] = mapped_column(String(100), index=True)
+    entity_id: Mapped[str] = mapped_column(String(100), index=True)
     action: Mapped[AuditAction] = mapped_column(Enum(AuditAction), index=True)
     changes: Mapped[dict[str, str]|None] = mapped_column(JSON, nullable=True)
     is_fail: Mapped[bool] = mapped_column(Boolean, default=False)
