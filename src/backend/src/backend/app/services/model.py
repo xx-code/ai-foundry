@@ -13,7 +13,7 @@ from backend.domain.entities.ai_provider_key import AiProviderKey
 from backend.domain.entities.model import Model
 from backend.domain.entities.model_tool import ModelTool
 from backend.domain.enums.ai_tool import AiToolType
-from backend.domain.exception import NotFoundException, ValidationException
+from backend.domain.exception import ForbiddenException, NotFoundException, ValidationException
 from backend.domain.repositories.model_repository import ModelRepository
 from backend.domain.repositories.repository import Repository
 from backend.domain.repositories.unit_of_work import UnitOfWork
@@ -66,6 +66,8 @@ class ModelService:
             if user == None: 
                 raise NotFoundException("USER_NOT_FOUND", "l'utilisateur est introuvable")
 
+            # check name already exist
+
             # check provider and return avaible model
             provider_models = self.list_provier_model(input.provider_key_id).get_or_throw()
             provider_model_ids = [item.model_id for item in provider_models.items]
@@ -100,11 +102,18 @@ class ModelService:
         except Exception as e:
             return Result.fail(e)
 
-    def update_model(self, input: UpdateModelDto) -> Result[None]:
+    def update_model(
+            self, 
+            input: UpdateModelDto, 
+            user_id: str | None = None) -> Result[None]:
         try:
             model = self._model_repo.get(uuid.UUID(input.model_id))
+
             if model is  None:
                 raise NotFoundException("MODEL_NOT_FOUND", "le model est introuvable")
+
+            if user_id is not None and model.user_id != uuid.UUID(user_id):
+                raise ForbiddenException("MODEL_USER_FORBIDDEN")
 
             if input.name is not None:
                 model.set_name(input.name) 
@@ -119,11 +128,44 @@ class ModelService:
             return Result.success(None)
         except Exception as e:
             return Result.fail(e)
-
-    def add_tool(self, input: AddModelToolDto) -> Result[None]:
+    
+    def down_model(
+            self, 
+            id: str,
+            user_id: str|None = None) -> Result[None]:
         try:
+            model_id = uuid.UUID(id)
+            model = self._model_repo.get(model_id) 
+            if model is None: 
+                raise NotFoundException("MODEL_NOT_FOUND", "modele est introuvable")
+
+            if user_id is not None and model.user_id != uuid.UUID(user_id):
+                raise ForbiddenException("MODEL_USER_FORBIDDEN")
+
+            self._model_repo.delete(id)
+            self._uow.commit()
+
+            return Result.success(None)
+        except Exception as e:
+            return Result.fail(e)
+    
+
+    def add_tool(
+            self, 
+            input: AddModelToolDto,
+            user_id: str | None = None
+        ) -> Result[None]:
+        try:
+            model_id = uuid.UUID(input.model_id)
+            model = self._model_repo.get(model_id) 
+            if model is None: 
+                raise NotFoundException("MODEL_NOT_FOUND", "modele est introuvable")
+
+            if user_id is not None and model.user_id != uuid.UUID(user_id):
+                raise ForbiddenException("MODEL_USER_FORBIDDEN")
+
             tool = ModelTool(
-                model_id=uuid.UUID(input.model_id),
+                model_id=model_id,
                 tool_id="",
                 tool_type=AiToolType.WEB_SEARCH
             )
@@ -134,7 +176,7 @@ class ModelService:
                     tool_type=input.type
                 )
             else:
-                mcp_server = self._user_mcp_tool_service.get_mcp_server(input.tool_id).get_or_throw()
+                mcp_server = self._user_mcp_tool_service.get_user_mcp_server(input.tool_id).get_or_throw()
                 tool = ModelTool(
                     model_id=tool.model_id,
                     tool_id=str(mcp_server.id),
@@ -148,11 +190,27 @@ class ModelService:
         except Exception as e:
             return Result.fail(e)
 
-    def remove_tool(self, id: str) -> Result[None]:
+    def remove_tool(
+            self, 
+            model_id: str,
+            id: str,
+            user_id: str | None = None
+        ) -> Result[None]:
         try:
+            model = self._model_repo.get(uuid.UUID(model_id)) 
+            if model is None: 
+                raise NotFoundException("MODEL_NOT_FOUND", "modele est introuvable")
+
+            if user_id is not None and model.user_id != uuid.UUID(user_id):
+                raise ForbiddenException("MODEL_USER_FORBIDDEN")
+
             tool = self._model_tool_repo.get(uuid.UUID(id))
             if tool is None:
                 raise NotFoundException("MODEL_TOOL_NOT_FOUND", "le tool du model est introuvable")
+
+            if tool.model_id == uuid.UUID(model_id):
+                raise ForbiddenException("DELETE_TOOL_MODEL_FORBIDDEN", "the tool is not bellow the model")
+
             self._model_tool_repo.delete(id)
             self._uow.commit()
 
@@ -174,11 +232,18 @@ class ModelService:
             return Result.fail(e)
         
 
-    def get_model(self, id: str) -> Result[ModelDto]:
+    def get_model(
+            self, 
+            id: str,
+            user_id: str | None = None
+        ) -> Result[ModelDto]:
         try:
             model = self._model_repo.get(uuid.UUID(id)) 
             if model is None: 
                 raise NotFoundException("MODEL_NOT_FOUND", "modele est introuvable")
+
+            if user_id is not None and model.user_id != uuid.UUID(user_id):
+                raise NotFoundException("MODEL_TOOL_NOT_FOUND", "le tool du model est introuvable")
 
             query = Query(
                 conditions=(

@@ -5,10 +5,16 @@ from backend.app.queries.comparator import Comparator
 from backend.app.queries.condition import Condition
 from backend.app.queries.query import Query
 from backend.app.services.dto.base import CreatedDto, ListDto, Result
-from backend.app.services.dto.user_mcp_tool import AddUserMcpServerDto, UpdateUserMcpServerDto, UserMcpServerDto
+from backend.app.services.dto.user_mcp_tool import (
+    AddUserMcpServerDto,
+    UpdateUserMcpServerDto,
+    UserMcpServerCredDto,
+    UserMcpServerDto,
+)
 from backend.domain.entities.user import User
 from backend.domain.entities.user_mcp_server import UserMcpServer
-from backend.domain.exception import NotFoundException
+from backend.domain.value_objects.mcp_client import McpClientCred
+from backend.domain.exception import ForbiddenException, NotFoundException
 from backend.domain.repositories.repository import Repository
 from backend.domain.repositories.unit_of_work import UnitOfWork
 
@@ -35,14 +41,16 @@ class UserMcpToolServerService:
             if user == None: 
                 raise NotFoundException("USER_NOT_FOUND", "l'utilisateur est introuvable")
 
-            encrypt_api_key = None
-            if input.api_key is not None:
-                encrypt_api_key = self._crypto.encrypt(input.api_key)
+            encrypt_api_key = (
+                self._crypto.encrypt(input.api_key)
+                if input.api_key is not None
+                else None
+            )
 
             new_user_mcp = UserMcpServer(
-                user_id=user_id, 
-                hostname=input.hostname,
-                encrypt_api_key= encrypt_api_key
+                user_id=user_id,
+                server_app=input.app,
+                client_cred=McpClientCred(encrypt_api_key=encrypt_api_key),
             )
 
             self._user_mcp_tool_repo.create(new_user_mcp)
@@ -64,14 +72,11 @@ class UserMcpToolServerService:
             if mcp == None: 
                 raise NotFoundException("USER_MCP_TOOL_NOT_FOUND", "mcp tool not found est introuvable")
             if user_id is not None and mcp.user_id != uuid.UUID(user_id):
-                raise NotFoundException("USER_MCP_TOOL_NOT_FOUND", "mcp tool not found est introuvable")
-
-            if input.hostname is not None:
-                mcp.set_hostname(input.hostname)
+                raise ForbiddenException("USER_MCP_FORBIDDEN")
 
             if input.api_key is not None:
                 encrypt_api_key = self._crypto.encrypt(input.api_key)
-                mcp.set_encrypt_api_key(encrypt_api_key)
+                mcp.set_client_cred(McpClientCred(encrypt_api_key=encrypt_api_key))
 
             if mcp.has_changed:
                 self._user_mcp_tool_repo.update(mcp)
@@ -93,11 +98,11 @@ class UserMcpToolServerService:
 
             items = []
             for item in mcps.items:
-                api_key = None
-                if item.encrypt_api_key is not None:
-                    api_key = self._crypto.decrypt(item.encrypt_api_key)
-
-                items.append(UserMcpServerDto.from_model(item, api_key))
+                cred = UserMcpServerCredDto.from_value_object(
+                    item.client_cred,
+                    self._crypto,
+                )
+                items.append(UserMcpServerDto.from_model(item, cred))
             
             return Result.success(ListDto(
                 items=items,
@@ -106,7 +111,7 @@ class UserMcpToolServerService:
         except Exception as e:
             return Result.fail(e)
 
-    def get_mcp_server(
+    def get_user_mcp_server(
         self,
         id: str,
         user_id: str | None = None,
@@ -116,14 +121,15 @@ class UserMcpToolServerService:
             if mcp == None: 
                 raise NotFoundException("USER_MCP_TOOL_NOT_FOUND", "mcp tool not found est introuvable")
             if user_id is not None and mcp.user_id != uuid.UUID(user_id):
-                raise NotFoundException("USER_MCP_TOOL_NOT_FOUND", "mcp tool not found est introuvable")
+                raise ForbiddenException("USER_MCP_FORBIDDEN")
 
-            api_key = None
-            if mcp.encrypt_api_key is not None:
-                api_key = self._crypto.decrypt(mcp.encrypt_api_key)
+            cred = UserMcpServerCredDto.from_value_object(
+                mcp.client_cred,
+                self._crypto,
+            )
 
             return Result.success(
-                UserMcpServerDto.from_model(mcp, api_key)
+                UserMcpServerDto.from_model(mcp, cred)
             )
         except Exception as e:
             return Result.fail(e)
@@ -138,7 +144,7 @@ class UserMcpToolServerService:
             if mcp == None: 
                 raise NotFoundException("USER_MCP_TOOL_NOT_FOUND", "mcp tool not found est introuvable")
             if user_id is not None and mcp.user_id != uuid.UUID(user_id):
-                raise NotFoundException("USER_MCP_TOOL_NOT_FOUND", "mcp tool not found est introuvable")
+                raise ForbiddenException("USER_MCP_FORBIDDEN")
 
             self._user_mcp_tool_repo.delete(id)
             self._uow.commit()

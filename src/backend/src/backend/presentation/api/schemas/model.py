@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Optional
-from backend.app.services.dto.model import DeployModelDto, ModelDto
+from backend.app.services.dto.model import DeployModelDto, ModelDto, UpdateModelDto
 from backend.domain.enums.ai_tool import AiToolType
 from backend.domain.enums.model_reasoning import ModelReasoning
 from pydantic import BaseModel
@@ -58,7 +58,16 @@ class DeployModelRequest(BaseModel):
 
 class UpdateModelRequest(BaseModel):
     name: Optional[str] = None
+    default_instruction: Optional[str] = None
     params: Optional[ModelParamsResponse] = None 
+
+    def to_domain(self, id: str) -> UpdateModelDto:
+        return UpdateModelDto(
+            model_id=id,
+            name=self.name,
+            params=self.params.to_domain() if self.params is not None else None,
+            default_instruction= self.default_instruction
+        )
 
 class AddModelToolRequest(BaseModel):
     tool_id: str

@@ -1,11 +1,15 @@
 from collections.abc import Callable
+import uuid
 
 from backend.app.adapters.ai_code_interpretor_tool import AiCodeInterpretorTool
 from backend.app.adapters.ai_web_tool import AiWebTool
+from backend.app.adapters.mcp_client_tool import McpClientTool
 from backend.app.services.dto.ai_tool import ToolSelectionDto
 from backend.app.services.dto.base import Result
+from backend.app.services.user_mcp_tool import UserMcpToolServerService
 from backend.domain.entities.user_mcp_server import UserMcpServer
 from backend.domain.enums.ai_tool import AiToolType
+from backend.domain.exception import NotFoundException
 from backend.domain.repositories.repository import Repository
 from langchain_core.tools import BaseTool
 
@@ -15,15 +19,23 @@ class AiToolService:
             self,
             ai_web_tools: AiWebTool,
             ai_code_interpretor_tools: AiCodeInterpretorTool,
-            user_mcp_server_repo: Repository[UserMcpServer]
+            mcp_client_tools: McpClientTool,
+            user_mcp_service: UserMcpToolServerService
         ) -> None:
         self._ai_web_tools = ai_web_tools
         self._ai_code_interpretor_tools = ai_code_interpretor_tools
-        self._user_mcp_server_repo = user_mcp_server_repo
+        self._user_mcp_service = user_mcp_service 
+        self._mcp_client_tools = mcp_client_tools
 
-    def _fetch_mcp_tool(self, id: str) -> BaseTool:...
+    def _fetch_mcp_tool(self, id: str) -> BaseTool:
+        user_mcp = self._user_mcp_service.get_user_mcp_server(id).get_or_throw()
 
+        tool = self._mcp_client_tools.get_mcp_tool(user_mcp.app, user_mcp.cred)
+        if tool is None:
+            raise NotFoundException("MCP_CLIENT_TOOL_NOT_FOUND", f"{user_mcp.app} not found")
 
+        return tool
+        
     def list_tools(self, selections: list[ToolSelectionDto]) -> Result[list[BaseTool]]:
         try:
             tool_factories: dict[

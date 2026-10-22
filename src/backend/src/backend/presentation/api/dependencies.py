@@ -3,6 +3,7 @@ from typing import Annotated, Iterator
 
 from backend.app.adapters.ai_code_interpretor_tool import AiCodeInterpretorTool
 from backend.app.adapters.ai_web_tool import AiWebTool
+from backend.app.adapters.mcp_client_tool import McpClientTool
 from backend.app.services.ai_tool import AiToolService
 from backend.infra.adapters.ai_code_interpretor_tool import CapsuleAiCodeInterpretor
 from backend.infra.adapters.ai_web_tool import DiffBotAiWebTool
@@ -55,6 +56,7 @@ from backend.infra.persistence.sqlalchemy.repositories.user_mcp_server import (
     SqlAlchemyUserMcpServerRepository,
 )
 from backend.infra.persistence.sqlalchemy.unit_of_work import SqlAlchemyUnitOfWork
+from backend.infra.tools.mcp import SystemMcpClientTool
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
@@ -97,6 +99,11 @@ def get_ai_web_tool() -> AiWebTool:
 def get_ai_code_interpretor() -> AiCodeInterpretorTool:
     return CapsuleAiCodeInterpretor()
 
+@lru_cache
+def get_mcp_client_tools() -> McpClientTool:
+    s = get_settings()
+    return SystemMcpClientTool(s.agni_app_url)
+
 DatabaseDep = Annotated[Database, Depends(get_database)]
 HasherDep = Annotated[PasswordHasher, Depends(get_password_hasher)]
 TokenAdapterDep = Annotated[TokenAdapter, Depends(get_token_adapter)]
@@ -104,6 +111,7 @@ CryptoDep = Annotated[Crypto, Depends(get_crypto)]
 ChatSessionDep = Annotated[TTLCache, Depends(get_chat_session)]
 AiWebToolDep = Annotated[AiWebTool, Depends(get_ai_web_tool)]
 AiCodeInterpretorToolDep = Annotated[AiCodeInterpretorTool, Depends(get_ai_code_interpretor)]
+McpClientToolDep = Annotated[McpClientTool, Depends(get_mcp_client_tools)]
 
 
 # --- Cheap objects, built per request (the session lives in Database's ContextVar)
@@ -214,14 +222,16 @@ def get_model_service(
 def get_ai_tool_service(
         ai_web_tool: AiWebToolDep,
         ai_code_interpretor: AiCodeInterpretorToolDep,
-        user_mcp_server_repo: Annotated[
-            Repository[UserMcpServer], Depends(get_user_mcp_server_repository)
-        ],
+        mcp_client_tool: McpClientToolDep,
+        user_mcp_service: Annotated[
+            UserMcpToolServerService, Depends(get_user_mcp_tool_service)
+        ]
     ) -> AiToolService:
     return AiToolService(
         ai_web_tools=ai_web_tool,
         ai_code_interpretor_tools=ai_code_interpretor,
-        user_mcp_server_repo=user_mcp_server_repo
+        user_mcp_service=user_mcp_service,
+        mcp_client_tools=mcp_client_tool
     )
 
 
