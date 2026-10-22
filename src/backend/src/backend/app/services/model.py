@@ -13,7 +13,7 @@ from backend.domain.entities.ai_provider_key import AiProviderKey
 from backend.domain.entities.model import Model
 from backend.domain.entities.model_tool import ModelTool
 from backend.domain.enums.ai_tool import AiToolType
-from backend.domain.exception import ForbiddenException, NotFoundException, ValidationException
+from backend.domain.exception import AlreadyExistException, ForbiddenException, NotFoundException, ValidationException
 from backend.domain.repositories.model_repository import ModelRepository
 from backend.domain.repositories.repository import Repository
 from backend.domain.repositories.unit_of_work import UnitOfWork
@@ -67,6 +67,15 @@ class ModelService:
                 raise NotFoundException("USER_NOT_FOUND", "l'utilisateur est introuvable")
 
             # check name already exist
+            if self._model_repo.exists(Query(
+                conditions=(
+                    Condition("user_id", Comparator.EQUAL, user.id),
+                    Condition("name", Comparator.EQUAL, input.name),
+                )
+            )):
+                raise AlreadyExistException("MODLE_NAME_ALREADY_USE", f"name model already use {input.name} ")
+
+
 
             # check provider and return avaible model
             provider_models = self.list_provier_model(input.provider_key_id).get_or_throw()
@@ -116,6 +125,15 @@ class ModelService:
                 raise ForbiddenException("MODEL_USER_FORBIDDEN")
 
             if input.name is not None:
+                if self._model_repo.exists(Query(
+                    conditions=(
+                        Condition("user_id", Comparator.EQUAL, model.user_id),
+                        Condition("name", Comparator.EQUAL, input.name),
+                        Condition("id", Comparator.NOT_EQUAL, model.id),
+                    )
+                )):
+                    raise AlreadyExistException("MODLE_NAME_ALREADY_USE", f"name model already use {input.name} ")
+
                 model.set_name(input.name) 
 
             if input.params is not None:

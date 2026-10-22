@@ -14,7 +14,7 @@ from backend.app.services.dto.user_mcp_tool import (
 from backend.domain.entities.user import User
 from backend.domain.entities.user_mcp_server import UserMcpServer
 from backend.domain.value_objects.mcp_client import McpClientCred
-from backend.domain.exception import ForbiddenException, NotFoundException
+from backend.domain.exception import AlreadyExistException, ForbiddenException, NotFoundException
 from backend.domain.repositories.repository import Repository
 from backend.domain.repositories.unit_of_work import UnitOfWork
 
@@ -40,6 +40,14 @@ class UserMcpToolServerService:
             user = self._user_repo.get(user_id)
             if user == None: 
                 raise NotFoundException("USER_NOT_FOUND", "l'utilisateur est introuvable")
+                
+            if self._user_mcp_tool_repo.exists(Query(
+                conditions=(
+                    Condition("user_id", Comparator.EQUAL, user.id),
+                    Condition("server_app", Comparator.EQUAL, input.app),
+                )
+            )):
+                raise AlreadyExistException("MCP_TOOL_ALREADY_ADDED", f"mcp tool already add {input.app} ")
 
             encrypt_api_key = (
                 self._crypto.encrypt(input.api_key)

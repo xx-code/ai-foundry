@@ -4,10 +4,13 @@ import uuid
 from backend.app.adapters.dto.model_adapter import AiProviderModelDto, ListAiProviderModelDto
 from backend.app.adapters.crypto import Crypto
 from backend.app.adapters.model_adapter import ProviderAiModelRepository
+from backend.app.queries.comparator import Comparator
+from backend.app.queries.condition import Condition
+from backend.app.queries.query import Query
 from backend.app.services.dto.base import CreatedDto, ListDto, Result
 from backend.app.services.dto.provider_key import AddProviderKeyDto, AiProviderKeyDto
 from backend.domain.entities.ai_provider_key import AiProviderKey
-from backend.domain.exception import NotFoundException
+from backend.domain.exception import AlreadyExistException, NotFoundException
 from backend.domain.repositories.repository import Repository
 from backend.domain.repositories.unit_of_work import UnitOfWork
 from backend.domain.repositories.user_repository import UserRepository
@@ -34,6 +37,16 @@ class AiProviderKeyService:
                 raise NotFoundException("USER_NOT_FOUND", "l'utilisateur est introuvable")
 
             encrypt_value = self._crypto.encrypt(input.api_key)
+
+            if self._ai_provider_key_repo.exists(Query(
+                conditions=(
+                    Condition("user_id", Comparator.EQUAL, user.id),
+                    Condition("name", Comparator.EQUAL, input.name),
+                )
+            )):
+                raise AlreadyExistException("KEY_PROVIDER_NAME_ALREADY_EXIST", f"name for key provider already exist {input.name} ")
+
+
 
             new_ai_provider_key = AiProviderKey(
                 user_id=user.id,
