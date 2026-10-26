@@ -22,14 +22,14 @@ class AiProviderModelResponse(BaseModel):
 
 
 class ModelParamsResponse(BaseModel):
-    temparature: float
+    temperature: float
     max_tokens: int
     timeout: int
     reasoning: ModelReasoning
 
     def to_domain(self) -> ModelParams:
         return ModelParams(
-            temperature=self.temparature,
+            temperature=self.temperature,
             max_tokens=self.max_tokens,
             timeout=self.timeout,
             reasoning=self.reasoning
@@ -97,7 +97,7 @@ class ModelResponse(BaseModel):
             name=dto.name,
             default_instruction=dto.default_instruction,
             params=ModelParamsResponse(
-                temparature=dto.params.temperature,
+                temperature=dto.params.temperature,
                 max_tokens=dto.params.max_tokens,
                 timeout=dto.params.timeout,
                 reasoning=dto.params.reasoning,
