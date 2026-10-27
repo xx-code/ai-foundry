@@ -12,7 +12,7 @@ class AddAiProviderKeyRequest(BaseModel):
 class AiProviderKeyResponse(BaseModel):
     id: str
     name: str
-    provider: str
+    provider: AiProvider
     api_key: str
 
     @classmethod
@@ -21,5 +21,5 @@ class AiProviderKeyResponse(BaseModel):
             id=dto.provider_id,
             name=dto.name,
             api_key=dto.api_key,
-            provider=dto.provider.value
+            provider=dto.provider
         )

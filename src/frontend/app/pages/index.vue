@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
-import type { AiModel } from '~/types/ui/model'
+import type { ModelTableItem } from '~/types/ui/model'
 
-const models = ref<AiModel[]>([
+const models = ref<ModelTableItem[]>([
     {
         id: '1',
         name: 'brain finance',
-        model: 'gpt-5.2',
+        modelId: 'gpt-5.2',
         provider: 'OpenAi',
-        createdAt: '2026-10-07T12:53:36'
+        createdAt: new Date('2026-10-07T12:53:36') 
     }
 ])
 const loading = ref(false)
 
-const columns: TableColumn<AiModel>[] = [
+const columns: TableColumn<ModelTableItem>[] = [
     { accessorKey: 'name', header: 'Nom' },
     { accessorKey: 'model', header: 'Modèles' },
     { accessorKey: 'provider', header: 'Fournisseur' },

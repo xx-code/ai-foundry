@@ -1,3 +1,5 @@
+import type { ModelReasoningType, ModelToolType } from "~/shared/constants/model"
+
 export interface ModelParams {
     temperature: number
     maxTokens: number
@@ -20,9 +22,10 @@ export interface Model {
     tools: ModelTool[]
 }
 
-export interface TableModel {
+export interface ModelTableItem {
     id: string
     name: string
+    modelId: string
     provider: string
     createdAt: Date
 }

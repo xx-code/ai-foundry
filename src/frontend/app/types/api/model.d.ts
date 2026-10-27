@@ -1,13 +1,15 @@
+import type { ModelReasoningType, ModelToolType } from "~/shared/constants/model"
+
 export type ModelParamsResponse = {
     temperature: number    
     max_tokens: number
-    reasoning: string
+    reasoning: ModelReasoningType
 }
 
 export type ModelToolResponse = {
     id: string
     tool_id: string
-    tool_type: string
+    tool_type: ModelToolType
 }
 
 export type ModelResponse = {
