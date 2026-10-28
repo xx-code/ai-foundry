@@ -10,6 +10,8 @@ const props = withDefaults(defineProps<{
     pageSize: 10
 })
 
+const emit = defineEmits<{ select: [row: T] }>()
+
 const page = ref(1)
 
 const total = computed(() => props.data.length)
@@ -44,6 +46,7 @@ const tableUi = {
             :columns="columns"
             :loading="loading"
             :ui="tableUi"
+            @select="(_row, row) => emit('select', row.original)"
         >
             <!-- Laisse passer les slots (#xxx-cell, #empty, ...) -->
             <template v-for="(_, name) in $slots" #[name]="slotProps">

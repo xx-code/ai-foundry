@@ -49,6 +49,38 @@ export const API_ROUTES = {
             serverPath: '/api/ai-provider-keys/:id',
             apiPath: '/ai-provider-keys/:id',
             method: 'GET'
+        },
+    },
+    AI_PROVIDER_KEYS: {
+        LIST: {
+            serverPath: '/api/ai-provider-keys',
+            apiPath: '/ai-provider-keys',
+            method: 'GET'
+        },
+        GET: {
+            serverPath: '/api/ai-provider-keys/:id',
+            apiPath: '/ai-provider-keys/:id',
+            method: 'GET'
+        },
+        ADD: {
+            serverPath: '/api/ai-provider-keys/add-key',
+            apiPath: '/ai-provider-keys/add-key',
+            method: 'POST'
+        },
+        CREATE: {
+            serverPath: '/api/ai-provider-keys',
+            apiPath: '/ai-provider-keys',
+            method: 'POST'
+        },
+        UPDATE: {
+            serverPath: '/api/ai-provider-keys/:id',
+            apiPath: '/ai-provider-keys/:id',
+            method: 'PUT'
+        },
+        DELETE: {
+            serverPath: '/api/ai-provider-keys/:id',
+            apiPath: '/ai-provider-keys/:id',
+            method: 'DELETE'
         }
     },
     MODEL: {
@@ -88,8 +120,8 @@ export const API_ROUTES = {
             method: 'PUT'
         },
         REMOVE_MODEL_TOOL: {
-            serverPath: '/api/models/:id/tool/:tool_id',
-            apiPath: '/models/:id/tool/:tool_id',
+            serverPath: '/api/models/:id/model/:tool_id',
+            apiPath: '/models/:id/model/:tool_id',
             method: 'DELETE'
         }
     },

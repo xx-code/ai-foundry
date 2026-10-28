@@ -1,5 +1,7 @@
+import type { ListResponse } from "~/types/api";
 import type { ModelResponse } from "~/types/api/model";
-import type { Model } from "~/types/ui/model";
+import type { List } from "~/types/ui";
+import type { Model, ModelTableItem } from "~/types/ui/model";
 
 export function toModel(data: ModelResponse): Model {
     return {
@@ -15,8 +17,26 @@ export function toModel(data: ModelResponse): Model {
         },
         tools: data.tools.map((tool) => ({
             id: tool.id,
+            name: tool.name,
             toolId: tool.tool_id,
             toolType: tool.tool_type
         }))
     }
+}
+
+export function toListModels(data: ListResponse<ModelResponse>): List<Model> {
+    return {
+        items: data.items.map(i => toModel(i)),
+        total: data.total
+    }
+}
+
+export function toListModelCards(data: Model[]): ModelTableItem[] {
+    return data.map(i => ({
+        id: i.id,
+        name: i.name,
+        model: i.providerModel,
+        provider: i.providerKeyId,
+        createdAt: new Date()
+    } satisfies ModelTableItem))
 }

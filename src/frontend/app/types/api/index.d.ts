@@ -5,3 +5,8 @@ export type WelcomeResponse = {
 export type CreatedResponse = {
     id: string
 }
+
+export type ListResponse<T> = {
+    items: T[]
+    total: number
+}

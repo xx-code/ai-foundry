@@ -8,6 +8,7 @@ export type ModelParamsResponse = {
 
 export type ModelToolResponse = {
     id: string
+    name: string
     tool_id: string
     tool_type: ModelToolType
 }
@@ -40,7 +41,7 @@ export type DepoloyModelRequest = {
 export type UpdateModelRequest = {
     name?: string
     default_instruction?: string
-    params?: string
+    params?: ModelParamsRequest
 }
 
 export type AddModelToolRequest = {

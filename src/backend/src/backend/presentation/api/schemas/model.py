@@ -75,6 +75,7 @@ class AddModelToolRequest(BaseModel):
 
 class ModelToolResponse(BaseModel):
     id: str
+    name: str
     tool_id: str
     tool_type: AiToolType
 
@@ -105,6 +106,7 @@ class ModelResponse(BaseModel):
             tools=[
                 ModelToolResponse(
                     id=str(tool.id),
+                    name=tool.name,
                     tool_id=tool.tool_id,
                     tool_type=tool.tool_type
                 )

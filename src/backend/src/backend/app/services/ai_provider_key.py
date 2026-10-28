@@ -80,3 +80,24 @@ class AiProviderKeyService:
             ))
         except Exception as e:
             return Result.fail(e)
+
+    def get_api_keys(self, user_id) -> Result[ListDto[AiProviderKeyDto]]:
+        try:
+            user = self._user_repo.get(uuid.UUID(user_id))
+            if user == None: 
+                raise NotFoundException("USER_NOT_FOUND", "l'utilisateur est introuvable")
+
+            providerKeys = self._ai_provider_key_repo.get_all(Query(
+                conditions=(Condition("user_id", Comparator.EQUAL, user.id),)
+            ))
+   
+            items = []
+            for item in providerKeys.items:
+                items.append(AiProviderKeyDto.from_model(item))
+            
+            return Result.success(ListDto(
+                items=items,
+                total=providerKeys.total
+            ))
+        except Exception as e:
+            return Result.fail(e)

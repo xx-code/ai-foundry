@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Model } from '~/types/ui/model'
+import { ModelToolType } from '~/shared/constants/model'
 
 type ModelDraft = Pick<Model, 'name' | 'defaultInstruction' | 'params'>
 
@@ -10,6 +11,10 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     save: [draft: ModelDraft]
+    addTool: [toolType: ModelToolType]
+    removeTool: [toolId: string]
+    toggleWebSearch: [checked: boolean]
+    toggleCodeInterpreter: [checked: boolean]
 }>()
 
 function toDraft(model: Model): ModelDraft {
@@ -34,6 +39,17 @@ const reasoningItems = ['low', 'medium', 'high']
 
 function reset() {
     draft.value = toDraft(props.model)
+}
+
+const hasWebSearch = computed(() => props.model.tools.some(t => t.toolType === ModelToolType.WEB_SEARCH))
+const hasCodeInterpreter = computed(() => props.model.tools.some(t => t.toolType === ModelToolType.CODE_INTERPRETOR))
+
+function onToggleWebSearch(val: boolean) {
+    emit('toggleWebSearch', val)
+}
+
+function onToggleCodeInterpreter(val: boolean) {
+    emit('toggleCodeInterpreter', val)
 }
 </script>
 
@@ -100,19 +116,31 @@ function reset() {
                 <span class="font-mono text-[10px]">{{ model.tools.length }}</span>
             </div>
 
-            <ul v-if="model.tools.length" class="space-y-1.5">
-                <li
-                    v-for="tool in model.tools"
-                    :key="tool.id"
-                    class="flex items-center justify-between border border-neutral-900 bg-white px-3 py-2 font-mono text-xs"
-                >
-                    <span class="truncate">{{ tool.toolId }}</span>
-                    <span class="text-[10px] text-neutral-500">{{ tool.toolType }}</span>
-                </li>
-            </ul>
-            <p v-else class="font-mono text-xs text-neutral-500">Aucun tool connecté.</p>
+            <div class="space-y-2">
+                <div class="flex items-center justify-between border border-neutral-900 bg-white px-3 py-2">
+                    <span class="font-mono text-xs">Web Search</span>
+                    <USwitch :model-value="hasWebSearch" @update:model-value="onToggleWebSearch" />
+                </div>
+                <div class="flex items-center justify-between border border-neutral-900 bg-white px-3 py-2">
+                    <span class="font-mono text-xs">Code Interpreter</span>
+                    <USwitch :model-value="hasCodeInterpreter" @update:model-value="onToggleCodeInterpreter" />
+                </div>
+            </div>
 
-            <UButton class="rounded-xs" color="neutral" variant="outline" size="sm" label="Ajouter un tool" />
+            <div class="space-y-1.5">
+                <div class="font-mono text-[10px] text-neutral-600">MCP</div>
+                <ul v-if="model.tools.some(t => t.toolType === ModelToolType.MCP_SERVER)" class="space-y-1.5">
+                    <li
+                        v-for="tool in model.tools.filter(t => t.toolType === ModelToolType.MCP_SERVER)"
+                        :key="tool.id"
+                        class="flex items-center justify-between border border-neutral-900 bg-white px-3 py-2 font-mono text-xs"
+                    >
+                        <span class="truncate">{{ tool.name }}</span>
+                        <UButton size="xs" variant="ghost" color="error" icon="i-lucide-trash-2" @click="emit('removeTool', tool.id)" />
+                    </li>
+                </ul>
+                <p v-else class="font-mono text-xs text-neutral-500">Aucun MCP connecté.</p>
+            </div>
         </div>
 
         <!-- Actions (collées en bas) -->

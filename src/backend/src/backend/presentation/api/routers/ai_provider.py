@@ -4,7 +4,7 @@ from fastapi import APIRouter, status
 from backend.app.services.dto.provider_key import AddProviderKeyDto
 from backend.presentation.api.dependencies import AiProviderKeyServiceDep, CurrentUserIdDep
 from backend.presentation.api.schemas.ai_provider_key import AddAiProviderKeyRequest, AiProviderKeyResponse
-from backend.presentation.api.schemas.base import CreatedResponse
+from backend.presentation.api.schemas.base import CreatedResponse, ListResponse
 
 
 router = APIRouter(prefix="/ai-provider-keys", tags=["Ai Provider"])
@@ -25,3 +25,12 @@ def get_provider_key(provider_id: str, _: CurrentUserIdDep, service: AiProviderK
     provider_key = service.get_api_key(provider_id=provider_id).get_or_throw()
 
     return AiProviderKeyResponse.from_service(provider_key) 
+
+@router.get("/")
+def get_provider_keys(user_id: CurrentUserIdDep, service: AiProviderKeyServiceDep) -> ListResponse[AiProviderKeyResponse]:
+    provider_keys = service.get_api_keys(user_id).get_or_throw()
+    
+    return  ListResponse(
+        items=[AiProviderKeyResponse.from_service(item) for item in provider_keys.items],
+        total=provider_keys.total
+    )

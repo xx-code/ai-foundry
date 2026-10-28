@@ -29,8 +29,8 @@ def get_models(user_id: CurrentUserIdDep, service: ModelServiceDep) -> ListRespo
     )
 
 @router.get("/{model_id}", response_model=ModelResponse)
-def get_model(model_id: str, _: CurrentUserIdDep, service: ModelServiceDep) -> ModelResponse:
-    model = service.get_model(model_id).get_or_throw()
+def get_model(model_id: str, user_id: CurrentUserIdDep, service: ModelServiceDep) -> ModelResponse:
+    model = service.get_model(model_id, user_id).get_or_throw()
 
     return ModelResponse.from_service(model)
 

@@ -270,7 +270,13 @@ class ModelService:
             )
 
             model_tools = list(self._model_tool_repo.get_all(query).items)
+            mcp_tool_names = {}
+            if user_id is not None:
+                mcp_tools = self._user_mcp_tool_service.get_mcp_servers(user_id).get_or_throw()
+                print(mcp_tools.items)
+                mcp_tool_names = { tool.id : tool.app for tool in mcp_tools.items }
 
-            return Result.success(ModelDto.from_model(model, model_tools))
+
+            return Result.success(ModelDto.from_model(model, mcp_tool_names, model_tools))
         except Exception as e:
             return Result.fail(e)

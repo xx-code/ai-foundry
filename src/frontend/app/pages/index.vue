@@ -1,17 +1,21 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
+import { toListModelCards, toListModels, toModel } from '~/mappers/model'
+import { API_ROUTES } from '~/shared/routes'
+import type { ModelResponse } from '~/types/api/model'
+import type { List } from '~/types/ui'
 import type { ModelTableItem } from '~/types/ui/model'
 
-const models = ref<ModelTableItem[]>([
-    {
-        id: '1',
-        name: 'brain finance',
-        modelId: 'gpt-5.2',
-        provider: 'OpenAi',
-        createdAt: new Date('2026-10-07T12:53:36') 
-    }
-])
+
 const loading = ref(false)
+const { data:models } = useAsyncData('models+all', async () => {
+    const res = await ApiLinkBuilder
+            .route<List<ModelResponse>>(API_ROUTES.MODEL.GET_ALL_MODELS)
+            .mapper(toListModels)
+            .execute()
+    
+    return toListModelCards(res.items)
+})
 
 const columns: TableColumn<ModelTableItem>[] = [
     { accessorKey: 'name', header: 'Nom' },
@@ -24,6 +28,10 @@ const dateFormatter = new Intl.DateTimeFormat('fr-FR', {
     dateStyle: 'short',
     timeStyle: 'medium'
 })
+
+function openModel(model: ModelTableItem) {
+    navigateTo(`/models/${model.id}`)
+}
 </script>
 
 <template>
@@ -31,7 +39,12 @@ const dateFormatter = new Intl.DateTimeFormat('fr-FR', {
         <div class="mb-3 flex justify-end">
             <UButton class="rounded-xs" color="secondary" label="Ajouter un modele" />
         </div>
-        <UiDataTable :data="models" :columns="columns" :loading="loading">
+        <UiDataTable
+            :data="models ?? []"
+            :columns="columns"
+            :loading="loading"
+            @select="openModel"
+        >
             <template #createdAt-cell="{ row }">
                 {{ dateFormatter.format(new Date(row.original.createdAt)) }}
             </template>

@@ -8,6 +8,7 @@ export interface ModelParams {
 
 export interface ModelTool {
     id: string
+    name: string
     toolId: string
     toolType: ModelToolType
 }
@@ -25,7 +26,7 @@ export interface Model {
 export interface ModelTableItem {
     id: string
     name: string
-    modelId: string
+    model: string
     provider: string
     createdAt: Date
 }

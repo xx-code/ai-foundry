@@ -14,7 +14,7 @@ const { ask } = useModelChat(() => props.modelId)
 const messages = ref<ChatMessage[]>([])
 const input = ref('')
 const loading = ref(false)
-const sessionId = ref(crypto.randomUUID())
+const sessionId = ref('')
 const scroller = ref<HTMLElement | null>(null)
 
 function stringify(value: unknown): string {
